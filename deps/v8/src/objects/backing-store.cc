@@ -81,8 +81,9 @@ base::AddressRegion GetReservedRegion(bool has_guard_regions,
     Address start = reinterpret_cast<Address>(buffer_start);
     DCHECK_EQ(8, sizeof(size_t));  // only use on 64-bit
     DCHECK_EQ(0, start % AllocatePageSize());
-    return base::AddressRegion(start - kNegativeGuardSize,
-                               static_cast<size_t>(kFullGuardSize));
+    //return base::AddressRegion(start - kNegativeGuardSize,
+    //                           static_cast<size_t>(kFullGuardSize));
+    return base::AddressRegion(start, static_cast<size_t>(byte_capacity));
   }
 #endif
 
@@ -93,7 +94,8 @@ base::AddressRegion GetReservedRegion(bool has_guard_regions,
 
 size_t GetReservationSize(bool has_guard_regions, size_t byte_capacity) {
 #if V8_TARGET_ARCH_64_BIT && V8_ENABLE_WEBASSEMBLY
-  if (has_guard_regions) return kFullGuardSize;
+  //if (has_guard_regions) return kFullGuardSize;
+  if (has_guard_regions) return byte_capacity;
 #else
   DCHECK(!has_guard_regions);
 #endif
@@ -417,8 +419,9 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateAndPartiallyCommitMemory(
   // Get a pointer to the start of the buffer, skipping negative guard region
   // if necessary.
 #if V8_ENABLE_WEBASSEMBLY
-  byte* buffer_start = reinterpret_cast<byte*>(allocation_base) +
-                       (guards ? kNegativeGuardSize : 0);
+  // byte* buffer_start = reinterpret_cast<byte*>(allocation_base) +
+  //                     (guards ? kNegativeGuardSize : 0);
+  byte* buffer_start = reinterpret_cast<byte*>(allocation_base);
 #else
   DCHECK(!guards);
   byte* buffer_start = reinterpret_cast<byte*>(allocation_base);
