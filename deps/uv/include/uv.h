@@ -279,6 +279,7 @@ UV_EXTERN int uv_replace_allocator(uv_malloc_func malloc_func,
 
 UV_EXTERN uv_loop_t* uv_default_loop(void);
 UV_EXTERN int uv_loop_init(uv_loop_t* loop);
+UV_EXTERN int uv_loop_init_worker(uv_loop_t* loop);
 UV_EXTERN int uv_loop_close(uv_loop_t* loop);
 /*
  * NOTE:
@@ -480,6 +481,7 @@ UV_EXTERN int uv_fileno(const uv_handle_t* handle, uv_os_fd_t* fd);
 UV_EXTERN uv_buf_t uv_buf_init(char* base, unsigned int len);
 
 UV_EXTERN int uv_pipe(uv_file fds[2], int read_flags, int write_flags);
+UV_EXTERN int uv_pipe_worker(uv_file fds[2], int read_flags, int write_flags);
 UV_EXTERN int uv_socketpair(int type,
                             int protocol,
                             uv_os_sock_t socket_vector[2],
@@ -1603,6 +1605,7 @@ struct uv_signal_s {
 };
 
 UV_EXTERN int uv_signal_init(uv_loop_t* loop, uv_signal_t* handle);
+UV_EXTERN int uv_signal_init_worker(uv_loop_t* loop, uv_signal_t* handle);
 UV_EXTERN int uv_signal_start(uv_signal_t* handle,
                               uv_signal_cb signal_cb,
                               int signum);
@@ -1783,6 +1786,10 @@ struct uv_thread_options_s {
 typedef struct uv_thread_options_s uv_thread_options_t;
 
 UV_EXTERN int uv_thread_create_ex(uv_thread_t* tid,
+                                  const uv_thread_options_t* params,
+                                  uv_thread_cb entry,
+                                  void* arg);
+UV_EXTERN int uv_thread_create_ex_custom(uv_thread_t* tid,
                                   const uv_thread_options_t* params,
                                   uv_thread_cb entry,
                                   void* arg);

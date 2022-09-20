@@ -298,6 +298,7 @@ int uv___stream_fd(const uv_stream_t* handle);
 #endif /* defined(__APPLE__) */
 
 int uv__make_pipe(int fds[2], int flags);
+int uv__make_pipe_worker(int fds[2], int flags);
 
 #if defined(__APPLE__)
 

@@ -130,7 +130,7 @@ class WorkerThreadData {
  public:
   explicit WorkerThreadData(Worker* w)
     : w_(w) {
-    int ret = uv_loop_init(&loop_);
+    int ret = uv_loop_init_worker(&loop_);
     if (ret != 0) {
       char err_buf[128];
       uv_err_name_r(ret, err_buf, sizeof(err_buf));
@@ -598,7 +598,7 @@ void Worker::StartThread(const FunctionCallbackInfo<Value>& args) {
   uv_thread_options_t thread_options;
   thread_options.flags = UV_THREAD_HAS_STACK_SIZE;
   thread_options.stack_size = w->stack_size_;
-  int ret = uv_thread_create_ex(&w->tid_, &thread_options, [](void* arg) {
+  int ret = uv_thread_create_ex_custom(&w->tid_, &thread_options, [](void* arg) {
     // XXX: This could become a std::unique_ptr, but that makes at least
     // gcc 6.3 detect undefined behaviour when there shouldn't be any.
     // gcc 7+ handles this well.

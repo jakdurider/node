@@ -277,6 +277,24 @@ static int uv__signal_loop_once_init(uv_loop_t* loop) {
   return 0;
 }
 
+static int uv__signal_loop_once_init_worker(uv_loop_t* loop) {
+  int err;
+
+  /* Return if already initialized. */
+  if (loop->signal_pipefd[0] != -1)
+    return 0;
+
+  err = uv__make_pipe_worker(loop->signal_pipefd, UV_NONBLOCK_PIPE);
+  if (err)
+    return err;
+
+  uv__io_init(&loop->signal_io_watcher,
+              uv__signal_event,
+              loop->signal_pipefd[0]);
+  uv__io_start(loop, &loop->signal_io_watcher, POLLIN);
+
+  return 0;
+}
 
 int uv__signal_loop_fork(uv_loop_t* loop) {
   uv__io_stop(loop, &loop->signal_io_watcher, POLLIN);
@@ -331,6 +349,20 @@ int uv_signal_init(uv_loop_t* loop, uv_signal_t* handle) {
   return 0;
 }
 
+int uv_signal_init_worker(uv_loop_t* loop, uv_signal_t* handle) {
+  int err;
+
+  err = uv__signal_loop_once_init_worker(loop);
+  if (err)
+    return err;
+
+  uv__handle_init(loop, (uv_handle_t*) handle, UV_SIGNAL);
+  handle->signum = 0;
+  handle->caught_signals = 0;
+  handle->dispatched_signals = 0;
+
+  return 0;
+}
 
 void uv__signal_close(uv_signal_t* handle) {
   uv__signal_stop(handle);

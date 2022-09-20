@@ -397,8 +397,26 @@
         ],
       }],
       [ 'OS in "linux freebsd openbsd solaris aix"', {
-        'cflags': [ '-pthread' ],
-        'ldflags': [ '-pthread' ],
+        'cflags': [ 
+          '-pthread',
+          '-L/home/chul/glibc/build/install/lib', 
+          '-B/home/chul/glibc/build/install/lib/',
+          '-I/home/chul/glibc/build/install/include/c++/10',
+          '-I/home/chul/glibc/build/install/include/x86_64-linux-gnu/c++/10',
+          '-I/home/chul/glibc/build/install/include/c++/10/backward',
+          '-I/home/chul/glibc/build/install/include',
+          '-I/home/chul/glibc/build/install/usr/include',
+        ],
+        'ldflags': [ 
+          '-pthread',
+          '-L/home/chul/glibc/build/install/lib', 
+          '-Wl,-rpath=/home/chul/glibc/build/install/lib',
+          '-Wl,-rpath=/usr/local/lib/x86_64-linux-gnu',
+          '-Wl,-rpath=/lib/x86_64-linux-gnu',
+          '-Wl,-rpath=/usr/lib/x86_64-linux-gnu',
+          '-Wl,--dynamic-linker=/home/chul/glibc/build/install/lib/ld-linux-x86-64.so.2',
+          '-B/home/chul/glibc/build/install/lib/',
+        ],
       }],
       [ 'OS in "linux freebsd openbsd solaris android aix cloudabi"', {
         'cflags': [ '-Wall', '-Wextra', '-Wno-unused-parameter', ],

@@ -264,6 +264,56 @@ int uv_thread_create_ex(uv_thread_t* tid,
   return UV__ERR(err);
 }
 
+int uv_thread_create_ex_custom(uv_thread_t* tid,
+                        const uv_thread_options_t* params,
+                        void (*entry)(void *arg),
+                        void *arg) {
+  int err;
+  pthread_attr_t* attr;
+  pthread_attr_t attr_storage;
+  size_t pagesize;
+  size_t stack_size;
+
+  /* Used to squelch a -Wcast-function-type warning. */
+  union {
+    void (*in)(void*);
+    void* (*out)(void*);
+  } f;
+
+  stack_size =
+      params->flags & UV_THREAD_HAS_STACK_SIZE ? params->stack_size : 0;
+
+  attr = NULL;
+  if (stack_size == 0) {
+    stack_size = uv__thread_stack_size();
+  } else {
+    pagesize = (size_t)getpagesize();
+    /* Round up to the nearest page boundary. */
+    stack_size = (stack_size + pagesize - 1) &~ (pagesize - 1);
+#ifdef PTHREAD_STACK_MIN
+    if (stack_size < PTHREAD_STACK_MIN)
+      stack_size = PTHREAD_STACK_MIN;
+#endif
+  }
+
+  if (stack_size > 0) {
+    attr = &attr_storage;
+
+    if (pthread_attr_init(attr))
+      abort();
+
+    if (pthread_attr_setstacksize(attr, stack_size))
+      abort();
+  }
+
+  f.in = entry;
+  err = pthread_create_custom(tid, attr, f.out, arg);
+
+  if (attr != NULL)
+    pthread_attr_destroy(attr);
+
+  return UV__ERR(err);
+}
 
 uv_thread_t uv_thread_self(void) {
   return pthread_self();
